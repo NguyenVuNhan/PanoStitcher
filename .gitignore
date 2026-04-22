@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Test / cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Stitch artifacts (large, regenerated)
+*.tif
+*.tiff
+*_panorama.jpg
+*.pto
+.panostitcher_done
+
+# Vendor binaries (large, downloaded separately)
+vendor/
+
+# DJI source images (large assets, not committed)
+assets/PANORAMA/
+
+# PyInstaller
+!panostitcher.spec

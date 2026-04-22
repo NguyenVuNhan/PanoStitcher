@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "panostitcher"
+version = "1.0.0"
+description = "One-click DJI drone panorama stitcher with GPU acceleration and 360° metadata injection"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = []
+
+[project.scripts]
+panostitcher = "panostitcher.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "pytest-mock>=3"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "e2e: end-to-end integration tests requiring Hugin, ExifTool, and ImageMagick",
+]

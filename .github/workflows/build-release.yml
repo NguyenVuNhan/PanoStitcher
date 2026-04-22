@@ -1,0 +1,95 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write          # for creating releases
+
+jobs:
+  # ---------------------------------------------------------------
+  # Unit tests (no external tools required)
+  # ---------------------------------------------------------------
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.10", "3.12"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install package + dev deps
+        run: pip install -e ".[dev]"
+
+      - name: Run unit tests
+        run: pytest -x -q --tb=short -m "not e2e"
+
+  # ---------------------------------------------------------------
+  # Build standalone executables with PyInstaller
+  # ---------------------------------------------------------------
+  build:
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: panostitcher-linux
+            ext: ""
+          - os: windows-latest
+            artifact: panostitcher-windows
+            ext: ".exe"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build deps
+        run: |
+          pip install -e ".[dev]"
+          pip install pyinstaller
+
+      - name: Build binary
+        run: pyinstaller panostitcher.spec
+
+      - name: Rename artifact
+        shell: bash
+        run: |
+          mv dist/panostitcher${{ matrix.ext }} dist/${{ matrix.artifact }}${{ matrix.ext }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/${{ matrix.artifact }}${{ matrix.ext }}
+
+  # ---------------------------------------------------------------
+  # GitHub Release
+  # ---------------------------------------------------------------
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/panostitcher-linux/panostitcher-linux
+            artifacts/panostitcher-windows/panostitcher-windows.exe
