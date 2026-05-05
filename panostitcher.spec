@@ -2,11 +2,20 @@
 """PyInstaller spec for PanoStitcher standalone binary."""
 
 a = Analysis(
-    ["src/panostitcher/__main__.py"],
-    pathex=[],
+    ["launcher.py"],
+    pathex=["src"],
     binaries=[],
     datas=[],
-    hiddenimports=["panostitcher"],
+    hiddenimports=[
+        "panostitcher",
+        "panostitcher.cli",
+        "panostitcher.config",
+        "panostitcher.dependencies",
+        "panostitcher.discovery",
+        "panostitcher.metadata",
+        "panostitcher.stitcher",
+        "panostitcher.validator",
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
